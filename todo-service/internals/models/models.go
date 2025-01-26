@@ -19,6 +19,22 @@ type Todo struct {
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`  // Timestamp when the task was last updated
 }
 
+type TodoList struct {
+	ID     int64  `json:"id"`      // Unique identifier
+	UserID int64  `json:"user_id"` // Associated user ID
+	Title  string `json:"title"`   // Task title
+	Status string `json:"status"`  // Status of the task (e.g., pending, in progress, completed)
+}
+
+func (todo *Todo) listView() (*TodoList, error) {
+	return &TodoList{
+		ID:     todo.ID,
+		UserID: todo.UserID,
+		Title:  todo.Title,
+		Status: todo.Status,
+	}, nil
+}
+
 func (todo *Todo) Save() error {
 	//save it to database
 	query := `
@@ -40,7 +56,7 @@ func (todo *Todo) Save() error {
 	return err
 }
 
-func GetAllTodo() ([]Todo, error) {
+func GetAllTodo() ([]TodoList, error) {
 	query := `select * from todo`
 	rows, err := database.DB.Query(query)
 	if err != nil {
@@ -48,14 +64,15 @@ func GetAllTodo() ([]Todo, error) {
 	}
 	defer rows.Close()
 
-	var todos []Todo
+	var todos []TodoList
 	for rows.Next() {
 		var t Todo
 		err := rows.Scan(&t.ID, &t.UserID, &t.Title, &t.Description, &t.Status, &t.Priority, &t.DueDate, &t.CreatedAt, &t.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
-		todos = append(todos, t)
+		tl, _ := t.listView()
+		todos = append(todos, *tl)
 	}
 	return todos, nil
 
