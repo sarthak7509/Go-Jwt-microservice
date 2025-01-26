@@ -8,6 +8,8 @@ import (
 func Router(app *gin.Engine) {
 	app.GET("/health", func(ctx *gin.Context) { ctx.JSON(200, gin.H{"message": "healthy"}) })
 
-	//Todo api's it 
-	app.GET("/todos", externals.GetAllTodo)
+	//Todo api's it
+	group := app.Group("/todos")
+	group.GET("/", externals.GetAllTodo)
+	group.POST("/", externals.CreateTodo)
 }
